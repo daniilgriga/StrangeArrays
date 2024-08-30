@@ -7,7 +7,6 @@ struct array_view
     size_t digits;
 };
 
-
 void communicate (void);
 
 int input(size_t* a);
@@ -22,7 +21,6 @@ int main (void)
 }
 
 
-
 void communicate (void)
 {
     size_t n_rows = 0;
@@ -30,16 +28,32 @@ void communicate (void)
     printf("Enter the desired number of rows: ");
     enter_coeff(&n_rows);
 
-    struct array_view* arrays = (struct array_view*)calloc(n_rows, sizeof(struct array_view));
+    char* buffer = (char*)calloc(n_rows, sizeof(struct array_view));
+    struct array_view* arrays = (struct array_view*)buffer;
+
+    int* data_beginning = (int*)(arrays + n_rows);
+    size_t nabeg_summ1 = 0;
+    size_t addr = 0;
     for (size_t i = 0; i < n_rows; i++)
     {
         printf("\nEnter the desired number of digits in %zu row: ", i);
         scanf("%zu", &(arrays[i]).digits);
-    }
 
+        nabeg_summ1 += arrays[i].digits;
+    }
+    addr = (size_t)data_beginning + nabeg_summ1;
+
+    buffer = (char*)realloc(buffer, (size_t)(n_rows * sizeof(struct array_view*) + addr * sizeof(int)));
+    arrays = (struct array_view*)buffer;
+
+    data_beginning = (int*)(arrays + n_rows);
+
+    size_t nabeg_summ2 = 0;
     for (size_t i = 0; i < n_rows; i++)
     {
-        arrays[i].mem = calloc(arrays[i].digits, sizeof(int));
+
+        nabeg_summ2 += arrays[i].digits;
+        arrays[i].mem = data_beginning + nabeg_summ2;
         for (size_t j = 0; j < arrays[i].digits; j++)
         {
             printf("\nEnter the desired numbers in %zu row: ", i);
@@ -47,21 +61,18 @@ void communicate (void)
         }
     }
 
+
     for (size_t y = 0; y < n_rows; y++)
     {
-        for (size_t x = 0; x < arrays[y].digits; x++)
+        for (size_t x = 0; x < arrays[y].digits ; x++)
         {
             printf("data[%zu][%zu] = %d   ", y, x, arrays[y].mem[x]);
         }
         // printf("\n");
         putchar('\n');
     }
-    for (size_t i = 0; i < n_rows; i++)
-    {
-        free(arrays[i].mem);
-        arrays[i].mem = NULL;
-    }
-    free(arrays); arrays = NULL;
+
+    free(buffer);
 }
 
 
